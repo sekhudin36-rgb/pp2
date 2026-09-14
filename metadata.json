@@ -1,6 +1,10 @@
 {
-  "name": "E-Perpus (Dapodik Style)",
-  "description": "Sistem Informasi Manajemen Perpustakaan berbasis Dashboard (Mirip E-rapor/Dapodik).",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "e-perpus",
+  "description": "Sistem Informasi Manajemen Perpustakaan Modern Dapodik-Style dengan Sinkronisasi Offline-Online, Barcode Scanner, dan AI.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

@@ -74,6 +74,82 @@ const defaultDb = {
   },
   users: [
     { id: 'u1', username: 'admin', password: '123456', role: 'Administrator' }
+  ],
+  visitors: [
+    {
+      id: 'v1',
+      memberId: '1',
+      name: 'Ahmad Rizky',
+      role: 'Siswa',
+      kelasOrDept: '7-A',
+      purpose: 'Membaca Buku',
+      notes: 'Membaca buku sains kurikulum merdeka',
+      visitedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'v2',
+      memberId: '2',
+      name: 'Siti Nurhaliza',
+      role: 'Siswa',
+      kelasOrDept: '8-B',
+      purpose: 'Meminjam / Mengembalikan Buku',
+      notes: 'Peminjaman buku Laskar Pelangi',
+      visitedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'v3',
+      name: 'Dra. Endang Sulastri',
+      role: 'Guru',
+      kelasOrDept: 'IPA',
+      purpose: 'Akses Internet / Komputer',
+      notes: 'Mencari referensi modul ajar',
+      visitedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+    }
+  ],
+  borrowRequests: [
+    {
+      id: 'req-1',
+      requestCode: 'REQ-2609-8472',
+      bookId: '1',
+      bookTitle: 'The Pragmatic Programmer',
+      bookAuthor: 'Andrew Hunt',
+      bookCategory: 'Teknologi',
+      bookIsbn: '978-0135957059',
+      memberId: '1',
+      nisNip: '102030',
+      requesterName: 'Muhammad Faiz',
+      requesterRole: 'Siswa',
+      requesterClass: '7-A',
+      phone: '08123456701',
+      requestedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+      pickupDate: new Date().toISOString().split('T')[0],
+      durationDays: 7,
+      status: 'pending',
+      notes: 'Untuk bahan tugas presentasi informatika'
+    },
+    {
+      id: 'req-2',
+      requestCode: 'REQ-2609-3195',
+      bookId: '9',
+      bookTitle: 'Laskar Pelangi',
+      bookAuthor: 'Andrea Hirata',
+      bookCategory: 'Fiksi',
+      bookIsbn: '978-979-306-279-2',
+      memberId: '2',
+      nisNip: '102031',
+      requesterName: 'Aisyah Putri',
+      requesterRole: 'Siswa',
+      requesterClass: '7-A',
+      phone: '08123456702',
+      requestedAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+      pickupDate: new Date().toISOString().split('T')[0],
+      durationDays: 7,
+      status: 'approved',
+      adminNotes: 'Buku telah disiapkan di meja sirkulasi. Silakan ambil sebelum jam 14:00.',
+      reviewedBy: 'Admin Perpustakaan',
+      reviewedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+      notes: 'Bahan bacaan literasi bulanan'
+    }
   ]
 };
 
@@ -83,6 +159,16 @@ function getDb() {
   
   const parsed = JSON.parse(data);
   let updated = false;
+
+  if (!parsed.visitors) {
+    parsed.visitors = defaultDb.visitors;
+    updated = true;
+  }
+
+  if (!parsed.borrowRequests) {
+    parsed.borrowRequests = defaultDb.borrowRequests;
+    updated = true;
+  }
 
   // Auto upgrade if old dataset is too small
   if (parsed.books && parsed.books.length <= 3) {
@@ -134,9 +220,13 @@ const mockResponse = (data: any, status = 200) => {
 
 Object.defineProperty(window, 'fetch', {
   value: async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = typeof input === 'string' ? input : (input instanceof Request ? input.url : input.toString());
+    const rawUrl = typeof input === 'string' ? input : (input instanceof Request ? input.url : input.toString());
+    const parsedUrl = new URL(rawUrl, window.location.origin);
+    const pathname = parsedUrl.pathname;
+    const searchParams = parsedUrl.searchParams;
+    const url = rawUrl;
     
-    if (!url.startsWith('/api/')) {
+    if (!pathname.startsWith('/api/')) {
       return originalFetch(input, init);
     }
 
@@ -147,7 +237,7 @@ Object.defineProperty(window, 'fetch', {
   // Handle delay for realistic feel
   await new Promise(r => setTimeout(r, 100));
 
-  console.log(`[Mock API] ${method} ${url}`, body);
+  console.log(`[Mock API] ${method} ${pathname}`, body);
 
   try {
     // Books
@@ -437,6 +527,208 @@ Object.defineProperty(window, 'fetch', {
       }
     }
 
+    // Visitors (Buku Kunjungan)
+    if (url === '/api/visitors') {
+      if (!db.visitors) db.visitors = [];
+      if (method === 'GET') {
+        return mockResponse(db.visitors);
+      }
+      if (method === 'POST') {
+        const newVisitor = {
+          id: Date.now().toString(),
+          ...body,
+          visitedAt: body.visitedAt || new Date().toISOString()
+        };
+        db.visitors.unshift(newVisitor);
+        saveDb(db);
+        return mockResponse(newVisitor, 201);
+      }
+    }
+
+    if (url.startsWith('/api/visitors/')) {
+      const id = url.split('/').pop();
+      if (!db.visitors) db.visitors = [];
+      if (method === 'DELETE') {
+        db.visitors = db.visitors.filter((v: any) => v.id !== id);
+        saveDb(db);
+        return mockResponse({ success: true });
+      }
+    }
+
+    // Borrow Requests (Pengajuan Peminjaman Mandiri / Online)
+    if (pathname === '/api/borrow-requests' || url === '/api/borrow-requests') {
+      if (!db.borrowRequests) db.borrowRequests = [];
+
+      if (method === 'GET') {
+        let list = [...db.borrowRequests];
+        const status = searchParams.get('status');
+        const code = searchParams.get('code');
+        const nisNip = searchParams.get('nisNip');
+        const query = searchParams.get('query');
+
+        if (status && status !== 'all') {
+          list = list.filter((r: any) => r.status === status);
+        }
+        if (code) {
+          const c = code.trim().toLowerCase();
+          list = list.filter((r: any) => (r.requestCode || '').toLowerCase() === c);
+        }
+        if (nisNip) {
+          const n = nisNip.trim().toLowerCase();
+          list = list.filter((r: any) => (r.nisNip || '').toLowerCase().includes(n));
+        }
+        if (query) {
+          const q = query.trim().toLowerCase();
+          list = list.filter((r: any) =>
+            (r.requestCode || '').toLowerCase().includes(q) ||
+            (r.requesterName || '').toLowerCase().includes(q) ||
+            (r.bookTitle || '').toLowerCase().includes(q) ||
+            (r.nisNip || '').toLowerCase().includes(q)
+          );
+        }
+
+        list.sort((a: any, b: any) => new Date(b.requestedAt || 0).getTime() - new Date(a.requestedAt || 0).getTime());
+        return mockResponse(list);
+      }
+
+      if (method === 'POST') {
+        const { bookId, nisNip, requesterName, requesterRole, requesterClass, phone, pickupDate, durationDays, notes } = body;
+        if (!bookId || !requesterName || !nisNip) {
+          return mockResponse({ error: 'Buku, NIS/NIP, dan Nama Pemohon wajib diisi' }, 400);
+        }
+
+        const book = db.books.find((b: any) => b.id === bookId);
+        if (!book) {
+          return mockResponse({ error: 'Buku tidak ditemukan' }, 404);
+        }
+
+        const now = new Date();
+        const yy = String(now.getFullYear()).slice(-2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+        const requestCode = `REQ-${yy}${mm}-${randomSuffix}`;
+
+        const member = db.members.find((m: any) => m.nisNip === nisNip || m.id === nisNip);
+
+        const newRequest = {
+          id: Date.now().toString(),
+          requestCode,
+          bookId,
+          bookTitle: book.title,
+          bookAuthor: book.author,
+          bookCategory: book.category,
+          bookIsbn: book.isbn,
+          memberId: member ? member.id : undefined,
+          nisNip,
+          requesterName,
+          requesterRole: requesterRole || (member ? member.role : 'Siswa'),
+          requesterClass: requesterClass || (member ? member.kelas : ''),
+          phone: phone || (member ? member.phone : ''),
+          requestedAt: new Date().toISOString(),
+          pickupDate: pickupDate || new Date().toISOString().split('T')[0],
+          durationDays: Number(durationDays) || (db.settings?.maxBorrowDays || 7),
+          status: 'pending',
+          notes: notes || ''
+        };
+
+        db.borrowRequests.unshift(newRequest);
+        saveDb(db);
+        return mockResponse(newRequest, 201);
+      }
+    }
+
+    if (pathname.startsWith('/api/borrow-requests/')) {
+      if (!db.borrowRequests) db.borrowRequests = [];
+      const id = pathname.split('/').pop();
+
+      if (method === 'PUT') {
+        const idx = db.borrowRequests.findIndex((r: any) => r.id === id);
+        if (idx === -1) {
+          return mockResponse({ error: 'Pengajuan tidak ditemukan' }, 404);
+        }
+
+        const current = db.borrowRequests[idx];
+        const { status, adminNotes, reviewedBy } = body;
+        const previousStatus = current.status;
+
+        current.status = status || current.status;
+        if (adminNotes !== undefined) current.adminNotes = adminNotes;
+        if (reviewedBy) current.reviewedBy = reviewedBy;
+        current.reviewedAt = new Date().toISOString();
+
+        // If marked as fulfilled (buku diserahkan ke pemohon & aktif dipinjam)
+        if (status === 'fulfilled' && previousStatus !== 'fulfilled') {
+          let member = db.members.find((m: any) => m.nisNip === current.nisNip || m.id === current.memberId);
+          if (!member) {
+            member = {
+              id: Date.now().toString(),
+              name: current.requesterName,
+              email: '',
+              phone: current.phone || '',
+              nisNip: current.nisNip,
+              kelas: current.requesterClass || '',
+              role: current.requesterRole,
+              gender: 'Laki-laki',
+              status: 'Aktif',
+              joinedAt: new Date().toISOString()
+            };
+            db.members.push(member);
+          }
+
+          const bookIdx = db.books.findIndex((b: any) => b.id === current.bookId);
+          if (bookIdx !== -1 && db.books[bookIdx].stock > 0) {
+            db.books[bookIdx].stock -= 1;
+          }
+
+          const dueDate = new Date();
+          dueDate.setDate(dueDate.getDate() + (current.durationDays || 7));
+
+          const newTx = {
+            id: Date.now().toString(),
+            bookId: current.bookId,
+            memberId: member.id,
+            borrowDate: new Date().toISOString(),
+            dueDate: dueDate.toISOString().split('T')[0],
+            status: 'borrowed',
+            notes: `Pengajuan Online (${current.requestCode}) - ${current.notes || ''}`
+          };
+
+          db.transactions.push(newTx);
+        }
+
+        saveDb(db);
+        return mockResponse(current);
+      }
+
+      if (method === 'DELETE') {
+        db.borrowRequests = db.borrowRequests.filter((r: any) => r.id !== id);
+        saveDb(db);
+        return mockResponse({ success: true });
+      }
+    }
+
+    // AI Endpoints (Fallback & Assistance)
+    if (url === '/api/ai/assistant' && method === 'POST') {
+      const prompt = body?.prompt || '';
+      let reply = 'Berikut panduan perpustakaan: Pastikan inventaris KIB E selalu teratur, catat sirkulasi secara berkala, dan berikan apresiasi kepada siswa pembaca teraktif setiap semester.';
+      
+      const lower = prompt.toLowerCase();
+      if (lower.includes('rekomendasi') || lower.includes('fiksi') || lower.includes('bacaan')) {
+        reply = `Rekomendasi buku fiksi & inspirasi untuk siswa SMP:\n1. **Laskar Pelangi** (Andrea Hirata) - Motivasi belajar & persahabatan\n2. **Negeri 5 Menara** (A. Fuadi) - Cita-cita dan disiplin pesantren\n3. **Hafalan Shalat Delisa** (Tere Liye) - Ketabahan dan kasih sayang keluarga\n4. **Bumi** (Tere Liye) - Petualangan fiksi sains dunia paralel\n5. **Si Putih** (Tere Liye) - Fiksi fantasi & kepedulian satwa`;
+      } else if (lower.includes('ddc') || lower.includes('klasifikasi')) {
+        reply = `Panduan Klasifikasi DDC Perpustakaan Sekolah:\n- **000**: Komputer, Informasi & Karya Umum\n- **100**: Filsafat & Psikologi\n- **200**: Agama\n- **300**: Ilmu Sosial (Kewarganegaraan, Pendidikan, Sosiologi)\n- **400**: Bahasa (Kamus, Tata Bahasa Indonesia & Asing)\n- **500**: Sains / Ilmu Murni (Matematika, IPA, Fisika, Biologi)\n- **600**: Teknologi & Ilmu Terapan\n- **700**: Kesenian, Hiburan, Olahraga\n- **800**: Kesusastraan (Novel, Cerpen, Puisi)\n- **900**: Sejarah, Geografi & Biografi`;
+      } else if (lower.includes('literasi') || lower.includes('minat baca')) {
+        reply = `Strategi Penguatan Gerakan Literasi Sekolah (GLS):\n1. **Pojok Baca Kelas & Dinding Resensi**: Siswa menulis ulasan singkat 3 kalimat tentang buku yang baru selesai dibaca.\n2. **Duta Literasi Sekolah**: Berikan penghargaan 'Pembaca Terbaik Bulan Ini' saat upacara bendera.\n3. **Tantangan 15 Menit Membaca Senyap** sebelum jam pertama pelajaran dimulai.\n4. **Pameran Karya & Sinopsis Kreatif** berkolaborasi dengan guru Bahasa Indonesia.`;
+      }
+      return mockResponse({ reply });
+    }
+
+    if (url === '/api/ai/summarize' && method === 'POST') {
+      const { title, author, category } = body || {};
+      const summary = `Buku '${title || 'Koleksi Perpustakaan'}' karya ${author || 'Penulis'}. Merupakan referensi penting dalam kategori ${category || 'Umum'} yang dirancang untuk memperkaya wawasan, penalaran kritis, dan literasi pembaca di lingkungan sekolah. Disusun secara sistematis dan sesuai dengan standar kurikulum pendidikan.`;
+      return mockResponse({ summary });
+    }
+
     // Tools
     if (url === '/api/export-db') {
       return mockResponse(db);
@@ -476,7 +768,12 @@ Object.defineProperty(window, 'fetch', {
     return mockResponse({ error: e.message }, 500);
   }
 
-  return mockResponse({ error: 'Route not mocked' }, 404);
+  // Fallback to real backend server if route wasn't matched in local mock
+  try {
+    return await originalFetch(input, init);
+  } catch {
+    return mockResponse({ error: 'Route not mocked' }, 404);
+  }
   },
   writable: true,
   configurable: true,

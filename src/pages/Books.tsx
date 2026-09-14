@@ -1,17 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Edit2, Trash2, BookOpen, Download, Upload, Printer, Eye } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, BookOpen, Download, Upload, Printer, Eye, Sparkles, Camera, BookMarked, FileText } from 'lucide-react';
 import Modal from '../components/Modal';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Barcode from 'react-barcode';
+import BarcodeScannerModal from '../components/BarcodeScannerModal';
+import EBookReaderModal from '../components/EBookReaderModal';
+import { useToast } from '../components/Toast';
 
 export default function Books() {
+  const { showToast } = useToast();
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   
+  // Scanner & AI & Reader state
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [scannerTarget, setScannerTarget] = useState<'register' | 'isbn'>('register');
+  const [isReaderOpen, setIsReaderOpen] = useState(false);
+  const [readerBook, setReaderBook] = useState<any>(null);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<any>(null);
@@ -136,6 +147,39 @@ export default function Books() {
       acquisitionYear: book.acquisitionYear || book.year || new Date().getFullYear().toString()
     });
     setIsModalOpen(true);
+  };
+
+  const handleGenerateAiSynopsis = async () => {
+    if (!formData.title) {
+      showToast('Isi judul buku terlebih dahulu', 'warning');
+      return;
+    }
+    setIsGeneratingAi(true);
+    try {
+      const res = await fetch('/api/ai/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          author: formData.author,
+          category: formData.category
+        })
+      });
+      const data = await res.json();
+      if (data.summary) {
+        setFormData(prev => ({ ...prev, description: data.summary }));
+        showToast('Sinopsis AI berhasil digenerate!', 'success');
+      }
+    } catch (err) {
+      showToast('Gagal membuat sinopsis AI', 'error');
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
+  const handleOpenReader = (book: any) => {
+    setReaderBook(book);
+    setIsReaderOpen(true);
   };
 
   const handleExportExcel = () => {
@@ -462,6 +506,7 @@ export default function Books() {
                       </span>
                     </td>
                      <td className="px-8 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={(e) => { e.stopPropagation(); handleOpenReader(book); }} className="text-slate-400 hover:text-indigo-400 p-1.5 transition-colors" title="Baca / Preview Digital"><BookMarked className="w-4 h-4" /></button>
                       <button onClick={(e) => { e.stopPropagation(); openDetailModal(book); }} className="text-slate-400 hover:text-white p-1.5 transition-colors" title="Lihat Detail"><Eye className="w-4 h-4" /></button>
                       <button onClick={(e) => { e.stopPropagation(); openPrintLabel(book); }} className="text-slate-400 hover:text-emerald-400 p-1.5 transition-colors" title="Cetak Label"><Printer className="w-4 h-4" /></button>
                       <button onClick={(e) => { e.stopPropagation(); openEditModal(book); }} className="text-slate-400 hover:text-blue-400 p-1.5 ml-1 transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -507,7 +552,16 @@ export default function Books() {
                 <input required type="text" value={formData.kodeBarang} onChange={e => setFormData({...formData, kodeBarang: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">No. Register</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">No. Register</label>
+                  <button 
+                    type="button" 
+                    onClick={() => { setScannerTarget('register'); setIsScannerOpen(true); }}
+                    className="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20"
+                  >
+                    <Camera className="w-3 h-3" /> Scan Barcode
+                  </button>
+                </div>
                 <input required type="text" value={formData.register} onChange={e => setFormData({...formData, register: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
@@ -523,7 +577,16 @@ export default function Books() {
                 <input type="text" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">ISBN / Kode Lain</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">ISBN / Kode Lain</label>
+                  <button 
+                    type="button" 
+                    onClick={() => { setScannerTarget('isbn'); setIsScannerOpen(true); }}
+                    className="text-[10px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20"
+                  >
+                    <Camera className="w-3 h-3" /> Scan Barcode
+                  </button>
+                </div>
                 <input required pattern="^[\d\-]{10,17}$" title="Masukkan ISBN yang valid (10-13 digit angka, boleh menggunakan strip)" type="text" value={formData.isbn} onChange={e => setFormData({...formData, isbn: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               
@@ -597,8 +660,19 @@ export default function Books() {
                 </div>
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Deskripsi / Sinopsis Lengkap</label>
-                <textarea rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Deskripsi / Sinopsis Lengkap</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAiSynopsis}
+                    disabled={isGeneratingAi}
+                    className="text-xs px-2.5 py-1 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                    {isGeneratingAi ? 'Sedang Membuat AI...' : '✨ Buat Sinopsis AI'}
+                  </button>
+                </div>
+                <textarea rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Tulis atau generate sinopsis buku..." className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" />
               </div>
             </div>
             <button type="submit" className="mt-4 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors shadow-lg sticky bottom-0 z-10">
@@ -836,6 +910,31 @@ export default function Books() {
         )}
       </Modal>
 
+      {/* Barcode Scanner Modal */}
+      <BarcodeScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={(scannedCode) => {
+          setIsScannerOpen(false);
+          if (scannerTarget === 'register') {
+            setFormData(prev => ({ ...prev, register: scannedCode }));
+            showToast(`No. Register terisi: ${scannedCode}`, 'success');
+          } else {
+            setFormData(prev => ({ ...prev, isbn: scannedCode }));
+            showToast(`ISBN terisi: ${scannedCode}`, 'success');
+          }
+        }}
+      />
+
+      {/* E-Book Digital Reader Modal */}
+      <EBookReaderModal
+        isOpen={isReaderOpen}
+        onClose={() => {
+          setIsReaderOpen(false);
+          setReaderBook(null);
+        }}
+        book={readerBook}
+      />
     </div>
   );
 }

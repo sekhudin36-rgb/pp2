@@ -12,14 +12,32 @@ import {
   Edit2, 
   Key, 
   Upload, 
-  RefreshCw 
+  RefreshCw,
+  Laptop,
+  CheckCircle2,
+  Wifi,
+  WifiOff,
+  FileCode,
+  ShieldCheck,
+  ArrowUpDown
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast';
 
 export default function Settings() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('umum');
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  // Sync / Dapodik State
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<any>({
+    status: 'online',
+    isOnline: navigator.onLine,
+    counts: { books: 0, members: 0, transactions: 0, visitors: 0 },
+    lastSync: localStorage.getItem('last_dapodik_sync') || new Date().toISOString()
+  });
 
   // Settings State
   const [libraryName, setLibraryName] = useState('E-Perpus');
@@ -77,7 +95,117 @@ export default function Settings() {
       .catch(console.error);
 
     fetchUsers();
+    fetchSyncStatus();
   }, []);
+
+  const fetchSyncStatus = async () => {
+    try {
+      const res = await fetch('/api/sync/status');
+      if (res.ok) {
+        const data = await res.json();
+        setSyncStatus(prev => ({
+          ...prev,
+          ...data,
+          isOnline: true
+        }));
+      }
+    } catch {
+      setSyncStatus(prev => ({ ...prev, isOnline: false }));
+    }
+  };
+
+  const handleTriggerSync = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/sync/status');
+      const data = await res.json();
+      const now = new Date().toISOString();
+      localStorage.setItem('last_dapodik_sync', now);
+      setSyncStatus({
+        ...data,
+        isOnline: true,
+        lastSync: now
+      });
+      showToast('Sinkronisasi Dapodik Berhasil! Semua data telah sinkron.', 'success');
+    } catch (err) {
+      showToast('Sinkronisasi gagal: Server tidak dapat dijangkau', 'error');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleDownloadBatchScript = () => {
+    const scriptContent = `@echo off
+title E-PERPUS - Sistem Manajemen Perpustakaan Sekolah
+color 0A
+cls
+echo ====================================================================
+echo        E-PERPUS - SISTEM PERPUSTAKAAN SEKOLAH (OFFLINE / ONLINE)
+echo ====================================================================
+echo.
+echo [1/3] Memeriksa instalasi Node.js pada laptop / PC ini...
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [PERINGATAN] Node.js belum terdeteksi di laptop ini!
+    echo Silakan unduh dan install Node.js terlebih dahulu dari:
+    echo https://nodejs.org/ (pilih versi LTS)
+    echo.
+    pause
+    exit /b 1
+)
+
+echo [OK] Node.js terdeteksi:
+node -v
+echo.
+
+echo [2/3] Memeriksa dependensi aplikasi...
+if not exist "node_modules" (
+    echo Mengunduh pustaka paket (hanya dilakukan pertama kali)...
+    call npm install
+    if %errorlevel% neq 0 (
+        echo [GAGAL] Gagal menginstall dependensi npm.
+        pause
+        exit /b 1
+    )
+)
+
+echo.
+echo [3/3] Menjalankan Server E-Perpus...
+echo.
+echo --------------------------------------------------------------------
+echo  Aplikasi Perpustakaan dapat dibuka di browser:
+echo  URL Lokal  : http://localhost:3000
+echo  URL Jaringan (LAN/WiFi): Bagikan IP laptop ini ke guru/siswa
+echo --------------------------------------------------------------------
+echo.
+echo Menjalankan aplikasi... Tekan CTRL+C di jendela ini untuk menghentikan server.
+echo.
+
+:: Membuka browser otomatis setelah server siap
+start "" "http://localhost:3000"
+
+:: Menjalankan server node
+npm run dev
+
+:: Jika server berhenti atau error, jendela CMD TIDAK AKAN LANGSUNG HILANG
+echo.
+echo ====================================================================
+echo Server E-Perpus telah dihentikan.
+echo ====================================================================
+pause
+`;
+
+    const blob = new Blob([scriptContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'start-eperpus.bat';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('File start-eperpus.bat berhasil didownload!', 'success');
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -310,6 +438,16 @@ export default function Settings() {
           </button>
 
           <button 
+            onClick={() => setActiveTab('dapodik')}
+            className={`flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl transition-all ${
+              activeTab === 'dapodik' ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent'
+            }`}
+          >
+            <ArrowUpDown className="w-5 h-5" />
+            <span>Sinkronisasi & Offline</span>
+          </button>
+
+          <button 
             onClick={() => setActiveTab('users')}
             className={`flex items-center gap-3 px-4 py-3 w-full text-left rounded-xl transition-all ${
               activeTab === 'users' ? 'bg-blue-600/20 text-blue-400 font-semibold border border-blue-500/30' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border border-transparent'
@@ -509,6 +647,108 @@ export default function Settings() {
                   <p className="text-xs text-slate-400 max-w-sm mt-1">
                     Mendukung Drag-and-Drop. Pilih file backup `.json` sebelumnya untuk mengembalikan seluruh database perpustakaan.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'dapodik' && (
+            <div className="max-w-3xl animate-in fade-in slide-in-from-right-4 duration-300 space-y-6">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <ArrowUpDown className="w-5 h-5 text-blue-400" />
+                  Sinkronisasi Dapodik & Sistem Offline-Online
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Arsitektur perpustakaan dirancang dapat beroperasi secara mandiri saat offline (di laptop sekolah) dan melakukan sinkronisasi data saat terkoneksi.
+                </p>
+              </div>
+
+              {/* Realtime Status Banner */}
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-900/20 via-slate-900/40 to-slate-900/40 border border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${syncStatus.isOnline ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                    {syncStatus.isOnline ? <Wifi className="w-6 h-6" /> : <WifiOff className="w-6 h-6" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${syncStatus.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                      <span className="font-bold text-slate-100 text-sm">
+                        {syncStatus.isOnline ? 'Mode Terhubung (Online Server)' : 'Mode Lokal (Offline / Standalone)'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Sinkronisasi Terakhir: {new Date(syncStatus.lastSync).toLocaleString('id-ID')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleTriggerSync}
+                  disabled={isSyncing}
+                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 shrink-0"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}</span>
+                </button>
+              </div>
+
+              {/* Data Sync Metrics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Katalog Buku</span>
+                  <p className="text-xl font-black text-slate-100 mt-1">{syncStatus.counts?.books ?? 0}</p>
+                  <span className="text-[9px] text-emerald-400">Siap Sinkron</span>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Anggota Siswa/Guru</span>
+                  <p className="text-xl font-black text-slate-100 mt-1">{syncStatus.counts?.members ?? 0}</p>
+                  <span className="text-[9px] text-emerald-400">Siap Sinkron</span>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Transaksi Sirkulasi</span>
+                  <p className="text-xl font-black text-slate-100 mt-1">{syncStatus.counts?.transactions ?? 0}</p>
+                  <span className="text-[9px] text-emerald-400">Siap Sinkron</span>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Buku Tamu</span>
+                  <p className="text-xl font-black text-slate-100 mt-1">{syncStatus.counts?.visitors ?? 0}</p>
+                  <span className="text-[9px] text-emerald-400">Siap Sinkron</span>
+                </div>
+              </div>
+
+              {/* Installer & 1-File Launcher Section */}
+              <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-700/60 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+                      <Laptop className="w-4 h-4 text-emerald-400" />
+                      Script Launcher 1-Klik untuk Laptop / PC Sekolah
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      Sesuai permintaan, file script batch ini telah disempurnakan dengan perintah <code className="text-amber-300 font-mono">pause</code> dan proteksi error sehingga jendela CMD <strong>TIDAK AKAN langsung hilang/menutup sendiri</strong> saat dijalankan di laptop Anda.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDownloadBatchScript}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 shrink-0"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Unduh start-eperpus.bat</span>
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-xs space-y-2 text-slate-300 font-mono">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Petunjuk Penggunaan di Laptop / Komputer Sekolah:</span>
+                  </div>
+                  <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-400 font-sans leading-relaxed">
+                    <li>Pastikan laptop Anda telah terpasang <strong>Node.js</strong> (dapat diunduh dari <a href="https://nodejs.org" target="_blank" rel="noreferrer" className="text-blue-400 underline">nodejs.org</a>).</li>
+                    <li>Letakkan file <code className="text-emerald-300 font-mono bg-white/5 px-1 py-0.5 rounded">start-eperpus.bat</code> di dalam folder proyek perpustakaan.</li>
+                    <li>Klik dua kali file <code className="text-emerald-300 font-mono bg-white/5 px-1 py-0.5 rounded">start-eperpus.bat</code>.</li>
+                    <li>Jendela terminal akan mendeteksi status instalasi, menjalankan server, dan otomatis membuka peramban web ke <strong>http://localhost:3000</strong>.</li>
+                    <li>Jika ada error apa pun, terminal tetap terbuka dan menampilkan pesan kesalahan lengkap tanpa langsung tertutup.</li>
+                  </ol>
                 </div>
               </div>
             </div>

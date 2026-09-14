@@ -1,0 +1,96 @@
+{
+  "books": [
+    {
+      "id": "1",
+      "kodeBarang": "02.06.01.01.01",
+      "register": "0001",
+      "title": "The Pragmatic Programmer",
+      "author": "Andrew Hunt",
+      "publisher": "Addison-Wesley",
+      "year": "1999",
+      "isbn": "978-0135957059",
+      "category": "Teknologi",
+      "stock": 5,
+      "source": "Pembelian BOS",
+      "price": 150000,
+      "condition": "Baik"
+    },
+    {
+      "id": "2",
+      "kodeBarang": "02.06.01.01.01",
+      "register": "0002",
+      "title": "Clean Code",
+      "author": "Robert C. Martin",
+      "publisher": "Prentice Hall",
+      "year": "2008",
+      "isbn": "978-0132350884",
+      "category": "Teknologi",
+      "stock": 3,
+      "source": "Pembelian BOS",
+      "price": 120000,
+      "condition": "Baik"
+    },
+    {
+      "id": "3",
+      "kodeBarang": "02.06.01.01.01",
+      "register": "0003",
+      "title": "Bumi Manusia",
+      "author": "Pramoedya Ananta Toer",
+      "publisher": "Hasta Mitra",
+      "year": "1980",
+      "isbn": "978-9799731234",
+      "category": "Fiksi",
+      "stock": 12,
+      "source": "Hibah",
+      "price": 85000,
+      "condition": "Kurang Baik"
+    }
+  ],
+  "members": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "08123456789",
+      "joinedAt": "2026-09-14T00:51:04.356Z"
+    },
+    {
+      "id": "2",
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "08987654321",
+      "joinedAt": "2026-09-14T00:51:04.357Z"
+    }
+  ],
+  "transactions": [],
+  "settings": {
+    "libraryName": "E-Perpus",
+    "institutionName": "SMP Negeri 1 Belajar",
+    "address": "Jl. Pendidikan No. 1, Kota Belajar",
+    "phone": "021-1234567",
+    "email": "perpus@smp.belajar.id",
+    "headLibrarian": "Ahmad Pustakawan, S.Pust",
+    "principalName": "Budi Santoso, S.Pd., M.Pd.",
+    "maxBorrowDays": 7,
+    "maxBorrowItems": 3,
+    "finePerDay": 500
+  },
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "admin",
+      "role": "Administrator",
+      "name": "Administrator Perpustakaan",
+      "createdAt": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "username": "pustakawan",
+      "password": "admin",
+      "role": "Kepala Perpustakaan",
+      "name": "Ahmad Pustakawan, S.Pust",
+      "createdAt": "2026-09-14T00:00:00.000Z"
+    }
+  ]
+}
