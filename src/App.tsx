@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
+import MobileBottomNav from './components/MobileBottomNav';
 import Dashboard from './pages/Dashboard';
 import Books from './pages/Books';
 import Catalog from './pages/Catalog';
@@ -28,7 +29,6 @@ function AppContent() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogin = () => {
     localStorage.setItem('isAuthenticated', 'true');
@@ -95,27 +95,24 @@ function AppContent() {
 
   // Authenticated Admin Dashboard Layout
   return (
-    <div className="h-screen w-full bg-slate-950 font-sans flex text-slate-50 relative overflow-hidden">
+    <div className="h-screen h-[100dvh] w-full bg-slate-950 font-sans flex text-slate-50 relative overflow-hidden">
       {/* Ambient Lighting Background Decoration */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/25 blur-[140px] rounded-full pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[140px] rounded-full pointer-events-none"></div>
       <div className="absolute top-1/2 left-1/3 w-[30%] h-[30%] bg-emerald-600/10 blur-[130px] rounded-full pointer-events-none"></div>
 
-      <div className="relative z-10 w-full h-full flex p-3 sm:p-6 gap-4 sm:gap-6">
+      <div className="relative z-10 w-full h-full flex p-2 sm:p-6 gap-2.5 sm:gap-6">
         <Sidebar 
           onLogout={handleLogout}
           onOpenAi={() => setIsAiOpen(true)}
-          isMobileOpen={isMobileMenuOpen}
-          onCloseMobile={() => setIsMobileMenuOpen(false)}
         />
-        <div className="flex-1 flex flex-col gap-4 sm:gap-6 h-full min-w-0">
+        <div className="flex-1 flex flex-col gap-3 sm:gap-6 h-full min-w-0">
           <Topbar 
             onOpenSearch={() => setIsCommandPaletteOpen(true)}
             onOpenScan={() => setIsScannerOpen(true)}
             onOpenAi={() => setIsAiOpen(true)}
-            onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)}
           />
-          <main className="flex-1 overflow-auto relative rounded-3xl pb-2">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden relative rounded-2xl sm:rounded-3xl pb-28 lg:pb-4 pr-1 sm:pr-2 mobile-scroll-container">
             <Routes>
               <Route path="/dashboard" element={<Dashboard onOpenScan={() => setIsScannerOpen(true)} onOpenAi={() => setIsAiOpen(true)} />} />
               <Route path="/visitors" element={<Visitors />} />
@@ -130,6 +127,14 @@ function AppContent() {
           </main>
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation Bar with Quick Actions & Menu Drawer */}
+      <MobileBottomNav
+        onOpenScan={() => setIsScannerOpen(true)}
+        onOpenSearch={() => setIsCommandPaletteOpen(true)}
+        onOpenAi={() => setIsAiOpen(true)}
+        onLogout={handleLogout}
+      />
 
       {/* Global Modals */}
       <CommandPalette

@@ -22,14 +22,12 @@ import {
   Printer, 
   ChevronRight, 
   Info, 
-  Library, 
   BookMarked,
   Phone,
   ShieldCheck,
   QrCode,
   Eye,
   ExternalLink,
-  LogIn,
   Download
 } from 'lucide-react';
 import { Book, Member, BorrowRequest, SettingsData } from '../types';
@@ -274,137 +272,132 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
   });
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col relative overflow-x-hidden font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col relative overflow-x-hidden font-sans selection:bg-blue-600 selection:text-white pb-20 sm:pb-0">
       {/* Background Ambience */}
       <div className="absolute top-[-10%] left-1/4 w-[45%] h-[400px] bg-blue-600/15 blur-[150px] rounded-full pointer-events-none"></div>
       <div className="absolute top-[30%] right-[-5%] w-[35%] h-[400px] bg-indigo-600/10 blur-[150px] rounded-full pointer-events-none"></div>
       <div className="absolute bottom-0 left-[-5%] w-[40%] h-[350px] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none"></div>
 
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white shrink-0">
-            <Bookmark className="w-5 h-5" />
+      <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between shadow-lg">
+        {/* Secret Admin Entry via App Logo */}
+        <button
+          type="button"
+          onClick={onBackToApp}
+          className="flex items-center gap-2.5 sm:gap-3 min-w-0 text-left group focus:outline-none transition-transform active:scale-95 cursor-pointer"
+          title={settings?.institutionName || 'e-perpus'}
+          aria-label="e-perpus"
+        >
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white shrink-0 group-hover:shadow-blue-500/40 group-hover:scale-105 transition-all">
+            <Bookmark className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-tight text-white">e-perpus</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white group-hover:text-blue-200 transition-colors">e-perpus</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 sm:px-2 py-0.5 rounded-full">
                 Halaman Utama
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium truncate max-w-[200px] sm:max-w-md">
+            <p className="text-[11px] sm:text-xs text-slate-400 font-medium truncate max-w-[150px] sm:max-w-md">
               {settings?.institutionName || 'SMP Negeri 1 Belajar'}
             </p>
           </div>
-        </div>
+        </button>
 
-        <div className="flex items-center gap-2">
-          {isAuthenticated ? (
-            <button
-              onClick={onBackToApp}
-              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md flex items-center gap-1.5"
-            >
-              <Library className="w-4 h-4" />
-              <span className="hidden sm:inline">Panel Petugas Perpustakaan</span>
-              <span className="sm:hidden">Panel Petugas</span>
-            </button>
-          ) : (
-            <button
-              onClick={onBackToApp}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <LogIn className="w-4 h-4 text-blue-400" />
-              <span>Masuk Petugas / Admin</span>
-            </button>
-          )}
+        {/* Clean Library Status Badge (Admin access is hidden and only accessible via the logo) */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] text-slate-300 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="hidden sm:inline font-medium">Layanan Perpustakaan Terbuka</span>
+            <span className="sm:hidden font-medium">Aktif</span>
+          </div>
         </div>
       </header>
 
       {/* Hero Banner with Navigation Tabs */}
-      <section className="relative px-4 sm:px-8 pt-8 pb-6 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-semibold mb-3">
+      <section className="relative px-3 sm:px-8 pt-4 sm:pt-8 pb-4 sm:pb-6 max-w-7xl mx-auto w-full">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] sm:text-xs font-semibold mb-2 sm:mb-3">
             <Sparkles className="w-3.5 h-3.5 text-blue-400" />
             Layanan Katalog Terpadu & Peminjaman Mandiri
           </span>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
             Cari Koleksi Buku & Ajukan Pinjam Online
           </h1>
-          <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1.5 sm:mt-2 leading-relaxed">
             Temukan ribuan referensi buku pelajaran, fiksi, dan sains di perpustakaan sekolah. Ajukan peminjaman langsung dari gadget Anda tanpa antre.
           </p>
         </div>
 
-        {/* Tab Buttons Switcher */}
-        <div className="flex items-center justify-center">
-          <div className="p-1.5 bg-slate-900/90 border border-white/10 rounded-2xl flex items-center gap-1.5 shadow-2xl backdrop-blur-md max-w-full overflow-x-auto">
+        {/* Tab Buttons Switcher - Only visible on desktop/tablet, mobile uses bottom menu */}
+        <div className="hidden sm:flex items-center justify-center">
+          <div className="p-1 sm:p-1.5 bg-slate-900/90 border border-white/10 rounded-2xl grid grid-cols-3 sm:flex sm:items-center gap-1 sm:gap-1.5 shadow-2xl backdrop-blur-md w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('search')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-sm transition-all text-center ${
                 activeTab === 'search'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Search className="w-4 h-4" />
-              <span>Pencarian Buku (OPAC)</span>
-              <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md ml-1 font-mono">
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Katalog (OPAC)</span>
+              <span className="hidden sm:inline text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md ml-1 font-mono">
                 {books.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab('request')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-sm transition-all text-center relative ${
                 activeTab === 'request'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Send className="w-4 h-4" />
-              <span>Form Pengajuan Pinjam</span>
+              <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Form Pinjam</span>
               {requestBook && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse absolute top-1 right-1 sm:static"></span>
               )}
             </button>
 
             <button
               onClick={() => setActiveTab('track')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-sm transition-all text-center ${
                 activeTab === 'track'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Clock className="w-4 h-4" />
-              <span>Lacak Status Pengajuan</span>
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Lacak Status</span>
             </button>
           </div>
         </div>
       </section>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 pb-16">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-8 pb-16">
         
         {/* ===================== TAB 1: PENCARIAN BUKU (OPAC) ===================== */}
         {activeTab === 'search' && (
-          <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="space-y-5 sm:space-y-6 animate-in fade-in duration-300">
             {/* Search Input Bar */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl shadow-xl space-y-4">
+            <div className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900/60 border border-white/10 backdrop-blur-xl shadow-xl space-y-3 sm:space-y-4">
               <div className="relative">
-                <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari judul buku, penulis, penerbit, nomor ISBN, atau nomor register rak..."
-                  className="w-full pl-12 pr-10 py-3.5 bg-slate-950/70 border border-white/10 rounded-2xl text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
+                  placeholder="Cari judul, pengarang, penerbit, ISBN, atau rak..."
+                  className="w-full pl-10 sm:pl-12 pr-16 sm:pr-10 py-2.5 sm:py-3.5 bg-slate-950/70 border border-white/10 rounded-xl sm:rounded-2xl text-xs sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 px-2 py-1 rounded-lg"
+                    className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-[11px] sm:text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 px-2 py-1 rounded-lg"
                   >
                     Hapus
                   </button>
@@ -412,14 +405,14 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
               </div>
 
               {/* Filters Row */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-white/5">
                 {/* Category Pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full sm:max-w-2xl">
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full sm:max-w-2xl no-scrollbar">
                   {categories.map(cat => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`text-xs px-3 py-1.5 rounded-xl font-medium transition-all shrink-0 ${
+                      className={`text-[11px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-medium transition-all shrink-0 ${
                         selectedCategory === cat
                           ? 'bg-blue-600 text-white font-bold shadow-sm'
                           : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-white/5'
@@ -431,25 +424,25 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
                 </div>
 
                 {/* Secondary Select Filters */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="grid grid-cols-2 sm:flex items-center gap-2 shrink-0">
                   <select
                     value={selectedAvailability}
                     onChange={(e: any) => setSelectedAvailability(e.target.value)}
-                    className="bg-slate-800 border border-white/10 text-slate-300 text-xs px-3 py-1.5 rounded-xl outline-none focus:ring-1 focus:ring-blue-500"
+                    className="bg-slate-800 border border-white/10 text-slate-300 text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 rounded-lg sm:rounded-xl outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="all">Semua Ketersediaan</option>
-                    <option value="available">Tersedia untuk Dipinjam</option>
-                    <option value="ebook">Hanya E-Book Digital</option>
+                    <option value="available">Tersedia Dipinjam</option>
+                    <option value="ebook">E-Book Digital</option>
                   </select>
 
                   <select
                     value={sortBy}
                     onChange={(e: any) => setSortBy(e.target.value)}
-                    className="bg-slate-800 border border-white/10 text-slate-300 text-xs px-3 py-1.5 rounded-xl outline-none focus:ring-1 focus:ring-blue-500"
+                    className="bg-slate-800 border border-white/10 text-slate-300 text-[11px] sm:text-xs px-2 sm:px-3 py-1.5 rounded-lg sm:rounded-xl outline-none focus:ring-1 focus:ring-blue-500"
                   >
-                    <option value="title">Urutkan: Judul (A-Z)</option>
-                    <option value="year">Urutkan: Tahun Terbaru</option>
-                    <option value="stock">Urutkan: Stok Terbanyak</option>
+                    <option value="title">Judul (A-Z)</option>
+                    <option value="year">Tahun Terbaru</option>
+                    <option value="stock">Stok Terbanyak</option>
                   </select>
                 </div>
               </div>
@@ -596,10 +589,10 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
         {activeTab === 'request' && (
           <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-300">
             {/* Form Container */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-6">
+            <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-5 sm:space-y-6">
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-                  <Send className="w-6 h-6 text-blue-400" />
+                <h2 className="text-lg sm:text-2xl font-black text-white flex items-center gap-2 sm:gap-2.5">
+                  <Send className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 shrink-0" />
                   Formulir Pengajuan Peminjaman Buku
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -813,18 +806,18 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
                 </div>
 
                 {/* Submit Action */}
-                <div className="pt-4 flex items-center justify-end gap-3">
+                <div className="pt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 w-full">
                   <button
                     type="button"
                     onClick={() => setActiveTab('search')}
-                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800 transition-colors"
+                    className="w-full sm:w-auto px-4 py-3 sm:py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800 transition-colors text-center"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={submitting || !requestBook}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center gap-2"
+                    className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2"
                   >
                     {submitting ? (
                       <>
@@ -848,10 +841,10 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
         {activeTab === 'track' && (
           <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-300">
             {/* Search Box */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4">
+            <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/80 border border-white/10 backdrop-blur-xl shadow-2xl space-y-4">
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-                  <Clock className="w-6 h-6 text-blue-400" />
+                <h2 className="text-lg sm:text-2xl font-black text-white flex items-center gap-2 sm:gap-2.5">
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 shrink-0" />
                   Lacak Status Pengajuan Peminjaman
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -859,22 +852,22 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
                 </p>
               </div>
 
-              <form onSubmit={handleTrackSearch} className="flex gap-2">
+              <form onSubmit={handleTrackSearch} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={trackingQuery}
                     onChange={(e) => setTrackingQuery(e.target.value)}
-                    placeholder="Masukkan Kode Pengajuan (REQ-...) atau NIS/NIP Anda..."
-                    className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                    placeholder="Kode Pengajuan (REQ-...) atau NIS/NIP..."
+                    className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isSearchingTracking}
-                  className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md flex items-center gap-2 shrink-0"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 shrink-0"
                 >
                   {isSearchingTracking ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1286,6 +1279,75 @@ export default function Portal({ onBackToApp, isAuthenticated = false }: PortalP
           </div>
         )}
       </Modal>
+
+      {/* ===================== MOBILE BOTTOM NAVIGATION BAR (PORTAL OPAC) ===================== */}
+      <nav 
+        id="portal-mobile-bottom-nav"
+        className="sm:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur-2xl border-t border-white/10 z-40 px-2 py-1.5 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]"
+        style={{ paddingBottom: 'calc(0.4rem + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="flex items-center justify-around max-w-md mx-auto">
+          {/* 1. Katalog */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('search');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all ${
+              activeTab === 'search'
+                ? 'text-blue-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'search' ? 'bg-blue-600/20' : ''}`}>
+              <Search className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] tracking-tight mt-0.5">Katalog</span>
+          </button>
+
+          {/* 2. Form Pinjam Mandiri */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('request');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all relative ${
+              activeTab === 'request'
+                ? 'text-blue-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'request' ? 'bg-blue-600/20' : ''}`}>
+              <Send className="w-5 h-5" />
+            </div>
+            {requestBook && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-1 right-3 animate-ping" />
+            )}
+            <span className="text-[10px] tracking-tight mt-0.5">Pinjam</span>
+          </button>
+
+          {/* 3. Lacak Status Tiket */}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('track');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center justify-center py-1 px-4 rounded-2xl transition-all ${
+              activeTab === 'track'
+                ? 'text-blue-400 font-bold scale-105'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'track' ? 'bg-blue-600/20' : ''}`}>
+              <Clock className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] tracking-tight mt-0.5">Lacak</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

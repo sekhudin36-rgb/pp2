@@ -329,7 +329,7 @@ export default function Reports() {
   if (loading) return <div className="p-6 text-slate-400">Memuat data laporan...</div>;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 h-full flex flex-col">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 min-h-full flex flex-col">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mt-2">
         <div>
           <h1 className="text-3xl font-bold text-slate-50 tracking-tight">Cetak Laporan</h1>

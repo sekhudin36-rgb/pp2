@@ -97,7 +97,9 @@ export interface SystemUser {
   id: string;
   username: string;
   password?: string;
+  pin?: string;
   role: string;
+  name?: string;
   avatar?: string;
 }
 

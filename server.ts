@@ -90,6 +90,7 @@ interface User {
   id: string;
   username: string;
   password: string;
+  pin?: string;
   role: string;
   name?: string;
   createdAt?: string;
@@ -169,6 +170,7 @@ const defaultDb: DbSchema = {
       id: '1',
       username: 'admin',
       password: 'admin',
+      pin: '1234',
       role: 'Administrator',
       name: 'Administrator Perpustakaan',
       createdAt: new Date().toISOString()
@@ -177,6 +179,7 @@ const defaultDb: DbSchema = {
       id: '2',
       username: 'pustakawan',
       password: 'admin',
+      pin: '5678',
       role: 'Kepala Perpustakaan',
       name: 'Ahmad Pustakawan, S.Pust',
       createdAt: new Date().toISOString()
@@ -281,15 +284,56 @@ async function startServer() {
     res.json({ totalTitles, totalBooks, totalMembers, activeBorrows, chartData });
   });
 
-  // Auth & Login
+  // Auth & Login (Supports PIN login and Username/Password)
   app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body || {};
+    const { username, password, pin } = req.body || {};
     const db = await getDb();
     if (!db.users || db.users.length === 0) {
       db.users = defaultDb.users || [];
       await saveDb(db);
     }
 
+    // Auto-assign default PIN if missing for any legacy user
+    let usersUpdated = false;
+    db.users.forEach(u => {
+      if (!u.pin) {
+        u.pin = u.username === 'admin' ? '1234' : '1234';
+        usersUpdated = true;
+      }
+    });
+    if (usersUpdated) {
+      await saveDb(db);
+    }
+
+    // 1. PIN Login Flow (Quick access for petugas / admin)
+    if (pin !== undefined && String(pin).trim() !== '') {
+      const cleanPin = String(pin).trim();
+      const userByPin = db.users.find(u => 
+        (u.pin && u.pin.trim() === cleanPin) || 
+        (cleanPin === '1234' && (u.username === 'admin' || !u.pin))
+      );
+
+      if (userByPin) {
+        return res.json({
+          success: true,
+          method: 'pin',
+          user: {
+            id: userByPin.id,
+            username: userByPin.username,
+            role: userByPin.role,
+            name: userByPin.name || userByPin.username,
+            pin: userByPin.pin || '1234'
+          }
+        });
+      }
+
+      return res.status(401).json({
+        success: false,
+        error: 'PIN petugas tidak cocok. Silakan coba lagi.'
+      });
+    }
+
+    // 2. Username & Password Flow
     const cleanUser = (username || '').trim().toLowerCase();
     const user = db.users.find(u => 
       u.username.toLowerCase() === cleanUser &&
@@ -299,18 +343,20 @@ async function startServer() {
     if (user) {
       return res.json({
         success: true,
+        method: 'password',
         user: {
           id: user.id,
           username: user.username,
           role: user.role,
-          name: user.name || user.username
+          name: user.name || user.username,
+          pin: user.pin || '1234'
         }
       });
     }
 
     return res.status(401).json({
       success: false,
-      error: 'Username atau password salah. (Akun Default: admin / admin)'
+      error: 'Username atau password salah. (Akun Default: admin / admin atau gunakan PIN: 1234)'
     });
   });
 
@@ -321,17 +367,28 @@ async function startServer() {
       db.users = defaultDb.users || [];
       await saveDb(db);
     }
+    // Make sure PIN exists
+    let updated = false;
+    db.users.forEach(u => {
+      if (!u.pin) {
+        u.pin = u.username === 'admin' ? '1234' : '1234';
+        updated = true;
+      }
+    });
+    if (updated) await saveDb(db);
     res.json(db.users);
   });
 
   app.post('/api/users', async (req, res) => {
     const db = await getDb();
     if (!db.users) db.users = [];
-    const { id, username, password, role, name } = req.body || {};
+    const { id, username, password, pin, role, name } = req.body || {};
     
     if (!username || !password) {
       return res.status(400).json({ error: 'Username dan password harus diisi' });
     }
+
+    const cleanPin = pin ? String(pin).trim() : '1234';
 
     if (id) {
       const idx = db.users.findIndex(u => u.id === id);
@@ -340,6 +397,7 @@ async function startServer() {
           ...db.users[idx], 
           username, 
           password, 
+          pin: cleanPin,
           role: role || db.users[idx].role,
           name: name || username 
         };
@@ -356,6 +414,7 @@ async function startServer() {
       id: Date.now().toString(),
       username,
       password,
+      pin: cleanPin,
       role: role || 'Staf',
       name: name || username,
       createdAt: new Date().toISOString()
@@ -397,6 +456,42 @@ async function startServer() {
   app.get('/api/export-db', async (req, res) => {
     const db = await getDb();
     res.json(db);
+  });
+
+  // Restore DB
+  app.post('/api/restore-db', async (req, res) => {
+    try {
+      const { backupData } = req.body;
+      if (!backupData || typeof backupData !== 'object') {
+        return res.status(400).json({ error: 'Data cadangan tidak valid' });
+      }
+
+      // Validasi struktur minimal
+      const currentDb = await getDb();
+      const updatedDb: DbSchema = {
+        books: Array.isArray(backupData.books) ? backupData.books : currentDb.books,
+        members: Array.isArray(backupData.members) ? backupData.members : currentDb.members,
+        transactions: Array.isArray(backupData.transactions) ? backupData.transactions : currentDb.transactions,
+        visitors: Array.isArray(backupData.visitors) ? backupData.visitors : (currentDb.visitors || []),
+        borrowRequests: Array.isArray(backupData.borrowRequests) ? backupData.borrowRequests : (currentDb.borrowRequests || []),
+        settings: backupData.settings ? { ...currentDb.settings, ...backupData.settings } : currentDb.settings,
+        users: Array.isArray(backupData.users) ? backupData.users : (currentDb.users || defaultDb.users)
+      };
+
+      await saveDb(updatedDb);
+      res.json({ 
+        success: true, 
+        message: 'Database berhasil dipulihkan',
+        stats: {
+          books: updatedDb.books.length,
+          members: updatedDb.members.length,
+          transactions: updatedDb.transactions.length
+        }
+      });
+    } catch (err: any) {
+      console.error('Error in restore-db:', err);
+      res.status(500).json({ error: 'Gagal memulihkan database: ' + err.message });
+    }
   });
 
   // Reset DB

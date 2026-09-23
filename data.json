@@ -80,6 +80,7 @@
       "id": "1",
       "username": "admin",
       "password": "admin",
+      "pin": "1234",
       "role": "Administrator",
       "name": "Administrator Perpustakaan",
       "createdAt": "2026-09-14T00:00:00.000Z"
@@ -88,6 +89,7 @@
       "id": "2",
       "username": "pustakawan",
       "password": "admin",
+      "pin": "5678",
       "role": "Kepala Perpustakaan",
       "name": "Ahmad Pustakawan, S.Pust",
       "createdAt": "2026-09-14T00:00:00.000Z"

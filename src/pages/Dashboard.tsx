@@ -91,12 +91,12 @@ export default function Dashboard({ onOpenScan, onOpenAi }: DashboardProps) {
       className="space-y-6"
     >
       {/* Header with quick overview */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent tracking-tight">
             Dashboard Utama
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Sistem Informasi Perpustakaan Sekolah Digital (Standar Dapodik & Akreditasi)
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function Dashboard({ onOpenScan, onOpenAi }: DashboardProps) {
           {onOpenAi && (
             <button
               onClick={onOpenAi}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm"
             >
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
               <span>Asisten AI</span>
@@ -113,7 +113,7 @@ export default function Dashboard({ onOpenScan, onOpenAi }: DashboardProps) {
           {onOpenScan && (
             <button
               onClick={onOpenScan}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs font-semibold transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs font-semibold transition-all shadow-sm"
             >
               <Camera className="w-3.5 h-3.5 text-blue-400" />
               <span>Scan Barcode</span>

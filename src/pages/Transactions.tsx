@@ -381,27 +381,27 @@ export default function Transactions() {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col relative">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 mt-2 mb-2">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-full flex flex-col relative">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 shrink-0 mt-2 mb-2">
         <div>
-          <h1 className="text-3xl font-bold text-slate-50 tracking-tight">Sirkulasi & Peminjaman</h1>
-          <p className="text-sm text-slate-400 mt-1">Catatan peminjaman, pengembalian, dan pengajuan buku online</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-50 tracking-tight">Sirkulasi & Peminjaman</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Catatan peminjaman, pengembalian, dan pengajuan buku online</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleExportExcel} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center">
-            <Download className="w-4 h-4 mr-2" /> EXCEL
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button onClick={handleExportExcel} className="flex-1 sm:flex-initial justify-center px-3 sm:px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl transition-colors flex items-center">
+            <Download className="w-3.5 h-3.5 mr-1.5" /> EXCEL
           </button>
-          <button onClick={handleExportPDF} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-lg transition-colors flex items-center">
-            <Download className="w-4 h-4 mr-2" /> PDF
+          <button onClick={handleExportPDF} className="flex-1 sm:flex-initial justify-center px-3 sm:px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold rounded-xl transition-colors flex items-center">
+            <Download className="w-3.5 h-3.5 mr-1.5" /> PDF
           </button>
         </div>
       </div>
 
       {/* Sub-Tab Selector */}
-      <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+      <div className="flex items-center gap-2 border-b border-white/10 pb-2 overflow-x-auto no-scrollbar">
         <button
           onClick={() => { setMainTab('circulation'); setSearch(''); }}
-          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             mainTab === 'circulation'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -416,14 +416,14 @@ export default function Transactions() {
 
         <button
           onClick={() => { setMainTab('requests'); setSearch(''); }}
-          className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 ${
+          className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             mainTab === 'requests'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
           }`}
         >
           <Send className="w-4 h-4" />
-          <span>Pengajuan Online (Portal)</span>
+          <span>Pengajuan Online</span>
           {pendingRequestsCount > 0 ? (
             <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full animate-pulse shadow-sm">
               {pendingRequestsCount} Menunggu
@@ -436,25 +436,25 @@ export default function Transactions() {
         </button>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden flex flex-col flex-1">
+      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl sm:rounded-3xl flex flex-col flex-1 min-h-[420px] lg:min-h-0">
         {mainTab === 'circulation' ? (
           <>
-            <div className="px-8 py-5 border-b border-white/10 flex justify-between items-center sm:flex-row flex-col gap-4">
-              <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <div className="px-4 sm:px-8 py-3.5 sm:py-5 border-b border-white/10 flex justify-between items-stretch sm:items-center flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full">
                 <div className="relative w-full sm:w-72">
                   <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input 
                     type="text" 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Cari peminjam / judul buku..." 
-                    className="w-full pl-9 pr-4 py-2 text-sm bg-slate-900/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-50 placeholder-slate-400 transition-all"
+                    placeholder="Cari peminjam / judul..." 
+                    className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-900/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-50 placeholder-slate-400 transition-all"
                   />
                 </div>
                 <select 
                   value={filterStatus} 
                   onChange={e => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 bg-slate-900/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500/50 text-sm text-slate-200 outline-none"
+                  className="px-3 sm:px-4 py-2 bg-slate-900/50 border border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500/50 text-xs sm:text-sm text-slate-200 outline-none"
                 >
                   <option value="All">Semua Status</option>
                   <option value="borrowed">Sedang Dipinjam</option>
@@ -462,20 +462,20 @@ export default function Transactions() {
                   <option value="overdue">Terlambat</option>
                 </select>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button 
                   onClick={() => { setScannerTarget('any'); setIsScannerOpen(true); }}
-                  className="px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center shrink-0 shadow-sm"
+                  className="flex-1 sm:flex-initial px-3.5 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/30 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center justify-center shrink-0 shadow-sm"
                 >
                   <Camera className="w-4 h-4 mr-1.5 text-indigo-400" /> SCAN KAMERA
                 </button>
-                <button onClick={openAddModal} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center shrink-0">
+                <button onClick={openAddModal} className="flex-1 sm:flex-initial px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap flex items-center justify-center shrink-0">
                   <Plus className="w-4 h-4 mr-1" /> PINJAM BARU
                 </button>
               </div>
             </div>
             
-            <div className="overflow-x-auto flex-1">
+            <div className="overflow-x-auto flex-1 min-h-[350px] lg:min-h-0">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/5 bg-slate-900/20">
@@ -602,7 +602,7 @@ export default function Transactions() {
               </button>
             </div>
 
-            <div className="overflow-x-auto flex-1">
+            <div className="overflow-x-auto flex-1 min-h-[350px] lg:min-h-0">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/5 bg-slate-900/20">

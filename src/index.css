@@ -9,26 +9,48 @@
 body {
   background-color: #020617; /* bg-slate-950 */
   color: #f8fafc; /* text-slate-50 */
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Custom Webkit Scrollbar */
+/* Global scrollbar rules for all elements */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) rgba(15, 23, 42, 0.6);
+}
+
+/* Custom Webkit Scrollbar (Chrome, Safari, Edge, Mobile WebKit) */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
+}
+
+@media (min-width: 640px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 9999px;
+  border: 1px solid rgba(15, 23, 42, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(148, 163, 184, 0.75);
+}
+
+/* Utility to ensure mobile scroll containers scroll with momentum */
+.mobile-scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 @media print {

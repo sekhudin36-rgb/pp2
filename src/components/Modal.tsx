@@ -25,15 +25,19 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm print:bg-white print:backdrop-blur-none">
-      <div className={`bg-slate-900 border border-white/10 rounded-2xl shadow-xl w-full ${sizeClasses[size]} flex flex-col max-h-[90vh] text-slate-50 print:border-none print:shadow-none print:bg-white print:text-black`}>
-        <div className="flex justify-between items-center p-5 border-b border-white/10 print:hidden">
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/80 backdrop-blur-sm print:bg-white print:backdrop-blur-none">
+      <div className={`bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl w-full ${sizeClasses[size]} flex flex-col max-h-[94vh] sm:max-h-[90vh] text-slate-50 print:border-none print:shadow-none print:bg-white print:text-black`}>
+        <div className="flex justify-between items-center px-4 py-3.5 sm:px-5 sm:py-4 border-b border-white/10 print:hidden">
+          <h2 className="text-base sm:text-lg font-semibold text-white truncate pr-2">{title}</h2>
+          <button 
+            onClick={onClose} 
+            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors shrink-0"
+            aria-label="Tutup Modal"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-5 overflow-y-auto">
+        <div className="p-4 sm:p-5 overflow-y-auto mobile-scroll-container">
           {children}
         </div>
       </div>

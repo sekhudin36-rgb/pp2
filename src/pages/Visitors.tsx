@@ -234,31 +234,31 @@ export default function Visitors() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent tracking-tight">
             Buku Kunjungan Perpustakaan
           </h1>
-          <p className="text-sm text-slate-400 mt-1">Presensi Pengunjung & Buku Tamu Harian Perpustakaan Sekolah</p>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Presensi Pengunjung & Buku Tamu Harian Perpustakaan Sekolah</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-2xl text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3.5 py-2 sm:py-2.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-xl text-xs font-semibold transition-all shadow-lg shadow-indigo-600/20"
           >
-            <Camera className="w-4 h-4" /> Scan Kartu Anggota
+            <Camera className="w-3.5 h-3.5" /> Scan Kartu
           </button>
           <button
             onClick={exportToExcel}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded-2xl text-xs font-semibold transition-all"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3.5 py-2 sm:py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded-xl text-xs font-semibold transition-all"
           >
-            <Download className="w-4 h-4 text-emerald-400" /> Excel
+            <Download className="w-3.5 h-3.5 text-emerald-400" /> Excel
           </button>
           <button
             onClick={exportToPdf}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded-2xl text-xs font-semibold transition-all"
+            className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-3.5 py-2 sm:py-2.5 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded-xl text-xs font-semibold transition-all"
           >
-            <Printer className="w-4 h-4 text-blue-400" /> Cetak PDF
+            <Printer className="w-3.5 h-3.5 text-blue-400" /> Cetak PDF
           </button>
         </div>
       </div>
